@@ -1,0 +1,28 @@
+Twon!!!
+=======
+
+Multi device light cycle game. 
+
+The Game
+--------
+
+Err, you've seen Tron right? Well the game is simple. 
+
+There is a game arena with clear boundaries. 
+You control a lightcycle which only goes forwards and only turns at right angles.
+You lightcycle leaves a trail/line behind it, marking where it has been.
+You cannot cross either your own line or another players.
+If you hit your own line or the arena boundary, you've killed yourself.
+If you hit another player's line, they have killed you.
+Riding near a boundary or another players line gives you a temporary speed boost.
+You have brakes.
+
+
+
+Tech
+----
+
+The idea behind this is to use several screens, both as the arena and for player controls.
+
+We'd like to use touch devices as controllers. Needs left, right, brake and maybe a speed indicator.
+
