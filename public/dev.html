@@ -1,0 +1,30 @@
+<!doctype html public "✰">
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1" >
+  
+  <title>dev</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+  <meta name="author" content="Ben Foxall">
+</head>
+<body>
+  <!-- this loads the 'server' code in the browser so we can develop without websockets -->
+  
+  <script src="socketMock.js" type="text/javascript" charset="utf-8"></script>
+  <script src="controller.js" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript" charset="utf-8">
+    controller(io);
+  </script>
+  
+  <iframe src="arena.html" width="400" height="300"></iframe>
+  <iframe src="player.html" width="400" height="300"></iframe>
+<!--
+  Hell YEAH this works!
+  <iframe src="player.html" width="400" height="300"></iframe>
+  <iframe src="player.html" width="400" height="300"></iframe>
+-->
+</body>
+</html>
