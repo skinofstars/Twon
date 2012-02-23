@@ -1,0 +1,36 @@
+<!doctype html public "✰">
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1" >
+  
+  <title>controller</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style type="text/css" media="screen">
+    button, body, html{
+      margin:0;
+      height:100%;
+    }
+    button{
+      width:50%;
+      float:left;
+      font-size:4em;
+    }
+  </style>
+</head>
+<body>
+  <button id="left">&larr;</button>
+  <button id="right">&rarr;</button>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="client.js" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript" charset="utf-8">
+    new PlayerView({
+      left:el('left'),
+      right:el('right')
+    })
+  </script>
+</body>
+</html>

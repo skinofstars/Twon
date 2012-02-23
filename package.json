@@ -1,0 +1,10 @@
+{
+  "name":"twon",
+  "version" : "0.0.1",
+  "description": "tron bikes allover the shop",
+  "author": "@skinofstars + @benjaminbenben",
+  "dependencies":{
+    "socket.io": "0.8.7",
+    "express": "2.5.1"
+  }
+}
