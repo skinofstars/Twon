@@ -2,7 +2,6 @@
   
   // if io has been defined in the top window (for dev reasons)
   var io = window.top.io || io;
-  
   // var socket = io.connect(document.location.origin);
   
   // get a socket - and listen for logging
@@ -20,6 +19,18 @@
 		// start socket and sign up as an arena
 		this.socket = getSocket();
     this.socket.emit('arena');
+    
+    this.socket.on('backgroundtop', function(color){
+      elements.top.style.backgroundColor = color
+    });
+    
+    
+    var ctx = elements.canvas.getContext('2d');
+    ctx.fillStyle="red"
+    this.socket.on('updatePlayer', function(id,x,y){
+      // *5 for debug
+      ctx.fillRect(x*5,y*5,2,2);
+    })
 	};
 	
 	

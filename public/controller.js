@@ -7,7 +7,7 @@ var controller = function(io){
   // utils
   var each = function(arr, fn){
     for (var i=0; i < arr.length; i++) {
-      fn.call(arr[i]);
+      fn.call(arr[i], arr[i]);
     };
   };
   var rest = function(arr){
@@ -23,39 +23,149 @@ var controller = function(io){
   var players = [];
   
   
+  
+  
   /* 
     Arena & Controller logic
   */
   
+  var Game = function(){
+    this.players = [];
+    this.arenas = [];
+    
+    this.start();
+    
+    // start the game loop
+    var g = this;
+    (function l(){
+      g.loop();
+      setTimeout(l,500);
+    })()
+  };
+  
+  // Add entities to the game
+  Game.prototype.addPlayer = function(player){
+    this.players.push(player);
+  };
+  Game.prototype.addArena = function(arena){
+    this.arenas.push(arena);
+  };
+  
+  /* start the game, position the players, etc */
+  Game.prototype.start = function(){
+    var y = 0;
+    each(this.players, function(player){
+      y += 10;
+      player.posArray = [[0,y]];
+      player.nextDirection = 'right';
+    });
+  }
+  
+  /* The actual game loop*/
+  Game.prototype.loop = function(){
+    // console.log("game loop")
+    
+    var arenas = this.arenas;
+    
+    each(this.players, function(player){
+      player.advance();
+      
+      //update the arena with the new player position
+      if(arenas[0]){
+        arenas[0].draw(player);
+      }
+    });
+    
+  };
+  
+  
+  
+  
   // the controller represention of an arena
   var Arena = function(sock){
     this.id = ArenaCounter++;
-    
-    // add to the list of arenas
-    arenas.push(this);
+    this.sock = sock;
   };
+  
+  Arena.prototype.color = function(color){
+    this.sock.emit('backgroundtop',color);
+  }
+  
+  // update the view of the arena
+  Arena.prototype.draw = function(player){
+    // console.log(player.id, player.x, player.y);
+    this.sock.emit('updatePlayer', player.id, player.x, player.y)
+  }
+  
+  
+  
   
   // the controller representation of a player
   var Player = function(sock){
     var id = this.id = PlayerCounter++;
+    this.sock = sock;
     
+    var player = this;
     // listen for commands from the player
     sock.on('left', function(){
       console.log("<<<Player"+id+" should go LEFT<<<");
+      // increment the direction
+      player.nextDirection = {
+        'right':'up',
+        'up':'left',
+        'left':'down',
+        'down':'right'
+      }[player.nextDirection];
     });
     
     sock.on('right', function(){
       console.log(">>>Player"+id+" should go RIGHT>>>");
+      // increment the direction
+      player.nextDirection = {
+        'right':'down',
+        'down':'left',
+        'left':'up',
+        'up':'right'
+      }[player.nextDirection];
     });
     
-    
-    // add to the list of players
-    players.push(this);
   };
   
+  Player.prototype.advance = function(){
+    var nextPosition = this.posArray[0].slice(); 
+    
+    direction = this.nextDirection;
+    switch (direction) {
+    case 'left':
+      nextPosition[0] -= 1;
+      break;
+    case 'up':
+      nextPosition[1] -= 1;
+      break;
+    case 'right':
+      nextPosition[0] += 1;
+      break;
+    case 'down':
+      nextPosition[1] += 1;
+      break;
+    default:
+      throw('Invalid direction');
+    }
+    
+    this.x = nextPosition[0];
+    this.y = nextPosition[1];
+
+    previousPosArray = this.posArray.slice();
+
+    //add the new position to the beginning of the array
+    this.posArray.unshift(nextPosition);
+    // console.log(this.posArray);
+  }
   
   
   
+  
+  var game = new Game();
   
   // Handle connections other windows
   io.sockets.on('connection', function(socket){
@@ -78,6 +188,8 @@ var controller = function(io){
       
       socket.emit('hello', "Hi there Arena " + arena.id);
       
+      game.addArena(arena);
+      
     });
     
     socket.on('player', function(){
@@ -89,6 +201,11 @@ var controller = function(io){
       var player = new Player(socket);
       
       socket.emit('hello', "Hi there player " + player.id);
+      
+      game.addPlayer(player);
+      
+      // restart the game
+      game.start();
       
     });
     
