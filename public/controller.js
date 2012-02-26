@@ -68,11 +68,14 @@ var controller = function(io){
       console.log("Couldn't start game,  no arenas."); return;
     }
     
-    var startArena = this.arenas[0];
-    var y = 0;
+    // clear the arenas
+    each(this.arenas, function(){
+      this.usedpoints = [];
+      this.emit('clear');
+    })
     
     var startArena = this.arenas[0];
-
+    var y = 0;
     each(this.players, function(player){
       y += 10;
       player.x = 0;
@@ -339,9 +342,11 @@ var controller = function(io){
       
       var player = new Player(socket);
       
+      player.emit('id', player.id);
       socket.emit('hello', "Hi there player " + player.id);
       
       game.addPlayer(player);
+      
       
       // restart the game
       game.start();
