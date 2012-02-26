@@ -48,27 +48,36 @@ var controller = function(io){
     var g = this;
     (function l(){
       g.loop();
-      setTimeout(l,1000);
+      setTimeout(l,50);
     })()
   };
   
   // Add entities to the game
   Game.prototype.addPlayer = function(player){
     this.players.push(player);
+    this.start();
   };
   Game.prototype.addArena = function(arena){
     this.arenas.push(arena);
+    this.start();
   };
   
   /* start the game, position the players, etc */
   Game.prototype.start = function(){
+    if(this.arenas.length == 0){
+      console.log("Couldn't start game,  no arenas."); return;
+    }
+    
+    var startArena = this.arenas[0];
     var y = 0;
     
     var startArena = this.arenas[0];
 
     each(this.players, function(player){
       y += 10;
-      player.posArray = [[0,y]];
+      player.x = 0;
+      player.y = y;
+      player.posArray = [0,y];
       player.nextDirection = 'right';
       player.arena = startArena;// XXX temporary
     });
@@ -82,10 +91,9 @@ var controller = function(io){
     
     each(this.players, function(player){
       player.advance();
-      player.checkCollision();
       //update the arena with the new player position
-      if(arenas[0]){
-        arenas[0].draw(player);
+      if(player.arena){
+        player.arena.draw(player);
       }
     });
     
@@ -128,13 +136,65 @@ var controller = function(io){
     this.usedpoints = [];
   };
   
-  Arena.prototype.color = function(color){
-    this.emit('backgroundtop',color);
+  // this checks to see if a player is still on this
+  // arena and moves them to another one (or null)
+  // as appropriate
+  Arena.prototype.updatePlayer = function(player){    
+    if(player.x < 0){
+      // left
+      if(player.arena = this.links.left)
+        player.arena.entry(this, player, player.y/this.height);
+      
+    } else if(player.x > this.width){
+      // right
+      if(player.arena = this.links.right)
+        player.arena.entry(this, player, player.y/this.height);
+      
+    } else if(player.y < 0){
+      //top
+      if(player.arena = this.links.top)
+        player.arena.entry(this, player, player.x/this.width);
+    } else if(player.y > this.height){
+      //bottom
+      if(player.arena = this.links.bottom)
+        player.arena.entry(this, player,  player.x/this.width);
+    }
+  };
+  
+  // this repositions the player as they have entered from another
+  // arena
+  Arena.prototype.entry = function(fromarena, player, position){
+    for(link in this.links){
+      if(this.links[link] === fromarena){
+        // update the direction and position
+        if(link == 'left'){
+          player.x = 0;
+          player.y = position * this.height;
+          player.nextDirection = 'right';
+        };
+        if(link == 'right'){
+          player.x = this.width;
+          player.y = position * this.height;
+          player.nextDirection = 'left';
+        };
+        if(link == 'top'){
+          player.x = position * this.width;
+          player.y = 0;
+          player.nextDirection = 'down';
+        };
+        if(link == 'bottom'){
+          player.x = position * this.width;
+          player.y = this.height;
+          player.nextDirection = 'up';
+        };
+        
+        console.log("Switched player" + player.id + ' from arena' + fromarena.id + ' --> arena' + this.id);
+      }
+    }
   }
   
   // update the view of the arena
   Arena.prototype.draw = function(player){
-    // console.log(player.id, player.x, player.y);
     this.emit('updatePlayer', player.id, player.x, player.y)
   }
   
@@ -162,7 +222,7 @@ var controller = function(io){
     this.transport = transport;
     
     this.on('left', function(){
-      console.log("<<<Player"+this.id+" should go LEFT<<<");
+      console.log("<<<Player"+this.id+" LEFT");
       // increment the direction
       this.nextDirection = {
         'right':'up',
@@ -173,7 +233,7 @@ var controller = function(io){
     });
     
     this.on('right', function(){
-      console.log(">>>Player"+id+" should go RIGHT>>>");
+      console.log(">>>Player"+id+" RIGHT");
       // increment the direction
       this.nextDirection = {
         'right':'down',
@@ -186,36 +246,27 @@ var controller = function(io){
   };
 
   Player.prototype.advance = function(){
-    var nextPosition = this.posArray[0].slice(); 
     
-    direction = this.nextDirection;
-    switch (direction) {
-    case 'left':
-      nextPosition[0] -= 1;
-      break;
-    case 'up':
-      nextPosition[1] -= 1;
-      break;
-    case 'right':
-      nextPosition[0] += 1;
-      break;
-    case 'down':
-      nextPosition[1] += 1;
-      break;
-    default:
-      throw('Invalid direction');
+    // increment x y appropriately
+    this.x += {left:-1, right:1}[this.nextDirection] || 0;
+    this.y += {down:1,  up:-1   }[this.nextDirection] || 0;
+    
+    // update/transistion the arena based on the position
+    if(this.arena){
+      this.arena.updatePlayer(this);
+      
+      if(!this.arena){
+        // we arent on an arena anymore
+        console.log("KABOOM");
+        
+      } else {
+        this.checkCollision();
+        // store the point for collisions
+        var nextPosition = [this.x,this.y,this.id];
+        this.arena.addUsedPoint(nextPosition);
+      }
+      
     }
-    
-    this.x = nextPosition[0];
-    this.y = nextPosition[1];
-
-    previousPosArray = this.posArray.slice();
-
-    this.arena.addUsedPoint(this.posArray[0].slice());
-
-    //add the new position to the beginning of the array
-    this.posArray.unshift(nextPosition);
-    // console.log(this.posArray); 
     
     
     
@@ -224,7 +275,7 @@ var controller = function(io){
   Player.prototype.checkCollision = function(){
     
     // actually, we just ask the arena for now
-    this.arena.checkCollision(this.posArray[0].slice());
+    this.arena.checkCollision([this.x,this.y,this.id]);
     
   }
   
