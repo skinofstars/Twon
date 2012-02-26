@@ -188,7 +188,7 @@ var controller = function(io){
           player.nextDirection = 'up';
         };
         
-        console.log("FOUND ARENA",fromarena,link, player,position);
+        console.log("Switched player" + player.id + ' from arena' + fromarena.id + ' --> arena' + this.id);
       }
     }
   }
@@ -222,7 +222,7 @@ var controller = function(io){
     this.transport = transport;
     
     this.on('left', function(){
-      console.log("<<<Player"+this.id+" should go LEFT<<<");
+      console.log("<<<Player"+this.id+" LEFT");
       // increment the direction
       this.nextDirection = {
         'right':'up',
@@ -233,7 +233,7 @@ var controller = function(io){
     });
     
     this.on('right', function(){
-      console.log(">>>Player"+id+" should go RIGHT>>>");
+      console.log(">>>Player"+id+" RIGHT");
       // increment the direction
       this.nextDirection = {
         'right':'down',
