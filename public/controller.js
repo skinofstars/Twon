@@ -23,7 +23,6 @@ var controller = function(io){
         isInArray = true;
       }
     });
-    console.log(isInArray);
     return isInArray;
   };
   
@@ -147,11 +146,13 @@ var controller = function(io){
   }
 
   Arena.prototype.checkCollision = function(head){
-     console.log('head:' + head)
-     console.log('used: '+ this.usedpoints);
+    // console.log('head:' + head)
+    // console.log('used: '+ this.usedpoints);
     // [[x,y,playerid],[x,y,playerid]]
     playerCollision = checkCoordinateInArray(head, this.usedpoints);
-    
+    if(playerCollision){
+      console.log('BOOM!');
+    }
   }
   
   
