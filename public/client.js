@@ -36,7 +36,7 @@
     ctx.fillStyle="red"
     this.on('updatePlayer', function(id,x,y){
       // *5 for debug
-      ctx.fillRect(x*5,y*5,2,2);
+      ctx.fillRect(x,y,1,1);
     });
     
     // set up the click handlers for the elements
