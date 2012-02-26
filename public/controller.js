@@ -77,13 +77,39 @@ var controller = function(io){
     
   };
   
-  
-  
+  // When a link between arenas is requested - we set this variable
+  var linkArena;
+  var linkEdge;
   
   // the controller represention of an arena
-  var Arena = function(transport){
+  var Arena = function(transport,width,height){
     this.id = ArenaCounter++;
     this.transport = transport;
+    
+    this.width = width;
+    this.height = height;
+    
+    this.links = {};
+    
+    
+    this.on('requestLink', function(edge){
+      console.log("requested link with", edge);
+      
+      if(!linkArena){
+        linkArena = this;
+        linkEdge = edge;
+      } else {
+        linkArena.links[linkEdge] = this;
+        this.links[edge] = linkArena;
+        
+        linkArena.emit('linked', linkEdge);
+        this.emit('linked', edge);
+        
+        // ready for another link
+        linkArena = false;
+      }
+      
+    });
   };
   
   Arena.prototype.color = function(color){
@@ -199,13 +225,13 @@ var controller = function(io){
     
     console.log("New Socket connection to server!");
     
-    socket.on('arena', function(){
+    socket.on('arena', function(width,height){
       if (identifed) {return} identifed = true;
       
       // this socket comes from an arena
       console.log("This socket comes from AN ARENA!!!");
       
-      var arena = new Arena(socket);
+      var arena = new Arena(socket,width,height);
       
       socket.emit('hello', "Hi there Arena " + arena.id);
       

@@ -1,5 +1,13 @@
 (function(window, document, io){
   
+  // utils
+  var each = function(arr, fn){
+    for (var i=0; i < arr.length; i++) {
+      fn.call(arr[i], arr[i], i);
+    };
+  };
+  
+  
   // if io has been defined in the top window (for dev reasons)
   var io = window.top.io || io;
   // var socket = io.connect(document.location.origin);
@@ -17,8 +25,7 @@
   var ArenaView = function(elements){
     this.els = elements;
     this.transport = getSocket();
-    
-    this.emit('arena');
+    this.emit('arena', this.els.canvas.width, this.els.canvas.height);
     
     this.on('backgroundtop', function(color){
       elements.top.style.backgroundColor = color
@@ -30,7 +37,23 @@
     this.on('updatePlayer', function(id,x,y){
       // *5 for debug
       ctx.fillRect(x*5,y*5,2,2);
+    });
+    
+    // set up the click handlers for the elements
+    var arenaView = this;
+    each(['top', 'bottom', 'left', 'right'], function(key){
+      var el = arenaView.els[key];
+      el.addEventListener('click', function(){
+        this.style.backgroundColor = 'blue';
+        arenaView.emit('requestLink', key);
+      })
+    });
+    
+    // when an edge has been linked
+    this.on('linked', function(edge){
+      this.els[edge].style.backgroundColor = 'green';
     })
+    
   };
   
   
