@@ -12,6 +12,8 @@
   var io = window.top.io || io;
   // var socket = io.connect(document.location.origin);
   
+  var fills = ['#f09','#fc0','#08f','#0f4'];
+  
   // get a socket - and listen for logging
   var getSocket = function(){
     var socket = io.connect(document.location.origin)
@@ -33,17 +35,24 @@
     
     
     var ctx = elements.canvas.getContext('2d');
-    ctx.fillStyle="red"
+    
     this.on('updatePlayer', function(id,x,y){
-      // *5 for debug
+      ctx.fillStyle=fills[id%fills.length]
       ctx.fillRect(x,y,1,1);
     });
+    this.on('clear', function(id,x,y){
+      ctx.clearRect(0,0,this.els.canvas.width, this.els.canvas.height);
+    });
+    
     
     // set up the click handlers for the elements
     var arenaView = this;
     each(['top', 'bottom', 'left', 'right'], function(key){
       var el = arenaView.els[key];
       el.addEventListener('click', function(){
+        if(this.style.backgroundColor == 'blue'){
+          return;
+        }
         this.style.backgroundColor = 'blue';
         arenaView.emit('requestLink', key);
       })
@@ -61,8 +70,6 @@
     this.els = elements;
     this.transport = getSocket();
     
-    this.emit('player');
-    
     var player = this;
     // link up the ui
     this.els.left.addEventListener('click', function(){
@@ -71,6 +78,18 @@
     this.els.right.addEventListener('click', function(){
       player.emit('right');
     })
+    
+    // player is assigned an id
+    this.on('id', function(id){
+      //color the buttons
+      // console.log('-----')
+      this.els.left.style.color = fills[id%fills.length]
+      this.els.right.style.color = fills[id%fills.length]
+    });
+    
+    
+    this.emit('player');
+    
   };
   
   
