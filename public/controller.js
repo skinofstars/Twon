@@ -69,7 +69,6 @@ var controller = function(io){
     
     each(this.players, function(player){
       player.advance();
-      
       //update the arena with the new player position
       if(arenas[0]){
         arenas[0].draw(player);
@@ -82,51 +81,49 @@ var controller = function(io){
   
   
   // the controller represention of an arena
-  var Arena = function(sock){
+  var Arena = function(transport){
     this.id = ArenaCounter++;
-    this.sock = sock;
+    this.transport = transport;
   };
   
   Arena.prototype.color = function(color){
-    this.sock.emit('backgroundtop',color);
+    this.emit('backgroundtop',color);
   }
   
   // update the view of the arena
   Arena.prototype.draw = function(player){
     // console.log(player.id, player.x, player.y);
-    this.sock.emit('updatePlayer', player.id, player.x, player.y)
+    this.emit('updatePlayer', player.id, player.x, player.y)
   }
   
   
   
   
   // the controller representation of a player
-  var Player = function(sock){
+  var Player = function(transport){
     var id = this.id = PlayerCounter++;
-    this.sock = sock;
+    this.transport = transport;
     
-    var player = this;
-    // listen for commands from the player
-    sock.on('left', function(){
-      console.log("<<<Player"+id+" should go LEFT<<<");
+    this.on('left', function(){
+      console.log("<<<Player"+this.id+" should go LEFT<<<");
       // increment the direction
-      player.nextDirection = {
+      this.nextDirection = {
         'right':'up',
         'up':'left',
         'left':'down',
         'down':'right'
-      }[player.nextDirection];
+      }[this.nextDirection];
     });
     
-    sock.on('right', function(){
+    this.on('right', function(){
       console.log(">>>Player"+id+" should go RIGHT>>>");
       // increment the direction
-      player.nextDirection = {
+      this.nextDirection = {
         'right':'down',
         'down':'left',
         'left':'up',
         'up':'right'
-      }[player.nextDirection];
+      }[this.nextDirection];
     });
     
   };
@@ -163,6 +160,30 @@ var controller = function(io){
   }
   
   
+  
+  
+  /* 
+   Link up the models to the transport
+
+   This means that the models don't have to have
+   transport code in them,  calling this.on(…) will
+   defer to the transport.  Also - the functions 
+   will be called in the context of the object
+   which is handy.
+ */
+  var transportPrototypes = function(){
+    this.prototype.on = function(event,fn){
+      var _this = this;
+      this.transport.on(event, function(){
+        fn.apply(_this,arguments);
+      });
+    };
+    this.prototype.emit = function(){
+      this.transport.emit.apply(this.transport,arguments);
+    };
+  }
+  transportPrototypes.call(Player);
+  transportPrototypes.call(Arena);
   
   
   var game = new Game();

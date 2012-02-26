@@ -12,22 +12,22 @@
     });
     return socket;
   }
+  
 	
 	var ArenaView = function(elements){
 		this.els = elements;
+		this.transport = getSocket();
 		
-		// start socket and sign up as an arena
-		this.socket = getSocket();
-    this.socket.emit('arena');
+		this.emit('arena');
     
-    this.socket.on('backgroundtop', function(color){
+    this.on('backgroundtop', function(color){
       elements.top.style.backgroundColor = color
     });
     
     
     var ctx = elements.canvas.getContext('2d');
     ctx.fillStyle="red"
-    this.socket.on('updatePlayer', function(id,x,y){
+    this.on('updatePlayer', function(id,x,y){
       // *5 for debug
       ctx.fillRect(x*5,y*5,2,2);
     })
@@ -36,22 +36,44 @@
 	
 	var PlayerView = function(elements){
 		this.els = elements;
+		this.transport = getSocket();
 		
-		// start socket and sign up as a player
-    this.socket = getSocket();
-		this.socket.emit('player');
+		this.emit('player');
 		
-		var socket = this.socket;
+		var player = this;
 		// link up the ui
 		this.els.left.addEventListener('click', function(){
-		  socket.emit('left');
+		  player.emit('left');
 		})
 		this.els.right.addEventListener('click', function(){
-		  socket.emit('right');
+		  player.emit('right');
 		})
 	};
 	
 	
+	
+	/* 
+   Link up the models to the transport
+
+   This means that the models don't have to have
+   transport code in them,  calling this.on(…) will
+   defer to the transport.  Also - the functions 
+   will be called in the context of the object
+   which is handy.
+ */
+	var transportPrototypes = function(){
+	  this.prototype.on = function(event,fn){
+      var _this = this;
+      this.transport.on(event, function(){
+        fn.apply(_this,arguments);
+      });
+    };
+    this.prototype.emit = function(){
+      this.transport.emit.apply(this.transport,arguments);
+    };
+	}
+	transportPrototypes.call(PlayerView);
+	transportPrototypes.call(ArenaView);
 	
 	
 	window.ArenaView = ArenaView;
