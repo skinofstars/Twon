@@ -13,7 +13,19 @@ var controller = function(io){
   var rest = function(arr){
     return Array.prototype.slice.call(arr,1);
   };
-  
+  var equalCoordinates = function (coord1, coord2) {
+    return coord1[0] === coord2[0] && coord1[1] === coord2[1];
+  };
+  var checkCoordinateInArray = function (coord, arr) {
+    var isInArray = false;
+    each(arr, function (item) {
+      if (equalCoordinates(coord, item)) {
+        isInArray = true;
+      }
+    });
+    console.log(isInArray);
+    return isInArray;
+  };
   
   var ArenaCounter = 0;
   var PlayerCounter = 0;
@@ -21,8 +33,6 @@ var controller = function(io){
   // a list of players and arenas
   var arenas = [];
   var players = [];
-  
-  
   
   
   /* 
@@ -39,7 +49,7 @@ var controller = function(io){
     var g = this;
     (function l(){
       g.loop();
-      setTimeout(l,500);
+      setTimeout(l,1000);
     })()
   };
   
@@ -54,10 +64,14 @@ var controller = function(io){
   /* start the game, position the players, etc */
   Game.prototype.start = function(){
     var y = 0;
+    
+    var startArena = this.arenas[0];
+
     each(this.players, function(player){
       y += 10;
       player.posArray = [[0,y]];
       player.nextDirection = 'right';
+      player.arena = startArena;// XXX temporary
     });
   }
   
@@ -69,6 +83,7 @@ var controller = function(io){
     
     each(this.players, function(player){
       player.advance();
+      player.checkCollision();
       //update the arena with the new player position
       if(arenas[0]){
         arenas[0].draw(player);
@@ -110,6 +125,8 @@ var controller = function(io){
       }
       
     });
+
+    this.usedpoints = [];
   };
   
   Arena.prototype.color = function(color){
@@ -122,7 +139,20 @@ var controller = function(io){
     this.emit('updatePlayer', player.id, player.x, player.y)
   }
   
-  
+  Arena.prototype.addUsedPoint = function(points){
+    // [x,y,playerid]
+    // console.log(points)
+    
+    this.usedpoints.push(points);
+  }
+
+  Arena.prototype.checkCollision = function(head){
+     console.log('head:' + head)
+     console.log('used: '+ this.usedpoints);
+    // [[x,y,playerid],[x,y,playerid]]
+    playerCollision = checkCoordinateInArray(head, this.usedpoints);
+    
+  }
   
   
   // the controller representation of a player
@@ -153,7 +183,7 @@ var controller = function(io){
     });
     
   };
-  
+
   Player.prototype.advance = function(){
     var nextPosition = this.posArray[0].slice(); 
     
@@ -180,12 +210,22 @@ var controller = function(io){
 
     previousPosArray = this.posArray.slice();
 
+    this.arena.addUsedPoint(this.posArray[0].slice());
+
     //add the new position to the beginning of the array
     this.posArray.unshift(nextPosition);
-    // console.log(this.posArray);
+    // console.log(this.posArray); 
+    
+    
+    
   }
   
-  
+  Player.prototype.checkCollision = function(){
+    
+    // actually, we just ask the arena for now
+    this.arena.checkCollision(this.posArray[0].slice());
+    
+  }
   
   
   /* 
