@@ -60,7 +60,19 @@ var controller = function(io){
   // Add entities to the game
   Game.prototype.addPlayer = function(player){
     this.players.push(player);
-    this.start();
+    
+    var playerCount = 0;
+    //purge any disconnected players
+    for (var i = this.players.length - 1; i >= 0; i--){
+      if(!this.players[i].disconnected){
+        playerCount++;
+      }
+    };
+    
+    // one connnected player
+    if(playerCount == 1){
+      this.start();
+    }
     this.report();
   };
   Game.prototype.addArena = function(arena){
@@ -114,10 +126,13 @@ var controller = function(io){
     
     var startArena = this.arenas[0];
     
-    //(player.id % 4) == 0;//0,height/2     d:right
-    //(player.id % 4) == 1;//width,height/2 d:left
-    //(player.id % 4) == 2;//width/2,0      d:down
-    //(player.id % 4) == 3;//width/2,height d:up
+    //purge any disconnected players
+    for (var i = this.players.length - 1; i >= 0; i--){
+      if(this.players[i].disconnected){
+        console.log("Removing player" + this.players[i].id)
+        this.players.splice(i,1);
+      }
+    };
     
     var y = 0;
     var i = 0;
@@ -338,7 +353,7 @@ var controller = function(io){
     // console.log('head:' + head)
     // console.log('used: '+ this.usedpoints);
     // [[x,y,playerid],[x,y,playerid]]
-    playerCollision = checkCoordinateInArray(head, this.usedpoints);
+    var playerCollision = checkCoordinateInArray(head, this.usedpoints);
     if(playerCollision){
       return true;
     }
@@ -493,6 +508,14 @@ var controller = function(io){
             game.arenas.splice(i,1); 
           }
         };
+        
+        // dont think this works…
+        // each(game.players, function(p){
+        //   //kill players on window loss
+        //   if(p.arena == arena){
+        //     p.dead = true;
+        //   }
+        // })
       });
       
     });
@@ -510,9 +533,13 @@ var controller = function(io){
       
       game.addPlayer(player);
       
+      socket.on('disconnect', function () {
+        player.disconnected = true;
+      });
+      
       
       // restart the game
-      game.start();
+      // game.start();
       
     });
     
