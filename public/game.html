@@ -5,24 +5,28 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1" >
   
-  <title>game</title>
+  <title>controller</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <meta name="author" content="Ben Foxall">
-</head>
+<style type="text/css" media="screen">
+	body{
+		font-family:sans-serif;
+	}
+</style>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <body>
-  <!-- this loads the 'server' code in the browser so we can develop without websockets -->
+	<input type="button" id="restart" value="restart">
+	<p id="players"></p>
+	<p id="arenas"></p>
   
-  
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-  <script src="game.js" type="text/javascript" charset="utf-8"></script>
-  
-  
-  <div id="game-canvas"></div> 
-<!--
-  Hell YEAH this works!
-  <iframe src="player.html" width="400" height="300"></iframe>
-  <iframe src="player.html" width="400" height="300"></iframe>
--->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="client.js" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript" charset="utf-8">
+    new GameView({
+			players:el('players'),
+			arenas:el('arenas'),
+			restart:el('restart')
+    })
+  </script>
 </body>
 </html>

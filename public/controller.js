@@ -45,6 +45,8 @@ var controller = function(io){
     this.players = [];
     this.arenas = [];
     
+    this.transports = [];
+    
     this.start();
     
     // start the game loop
@@ -59,11 +61,44 @@ var controller = function(io){
   Game.prototype.addPlayer = function(player){
     this.players.push(player);
     this.start();
+    this.report();
   };
   Game.prototype.addArena = function(arena){
     this.arenas.push(arena);
     this.start();
+    this.report();
   };
+  
+  //Hack because games get socks added later and multiple transports
+  Game.prototype.addTransport = function(trans){
+    this.transports.push(trans);
+    
+    var game = this;
+    // All ON stuff should be added here, and the context won't be `game`
+    // trans.on('button')…
+    trans.on('restart', function(){
+      game.start();
+    })
+    
+    this.report();
+  };
+  
+  Game.prototype.emit = function(){
+    var _this = this;
+    var args = arguments;
+    for(var t in this.transports){
+      var trans = this.transports[t];
+            console.log(t,this.transports)
+      trans.emit.apply(trans,args);
+    }
+  };
+  
+  // report the current game state 
+  Game.prototype.report = function(){
+    this.emit('update:player_count',this.players.length);
+    this.emit('update:arena_count',this.arenas.length);
+  }
+  
   
   /* start the game, position the players, etc */
   Game.prototype.start = function(){
@@ -113,6 +148,10 @@ var controller = function(io){
       });
     }
   };
+  
+  
+  
+  
   
   
   // When a link between arenas is requested - we set this variable
@@ -375,6 +414,18 @@ var controller = function(io){
       
       // restart the game
       game.start();
+      
+    });
+    
+    
+    
+    socket.on('game', function(){
+      if (identifed) {return} identifed = true;
+      
+      // this socket comes from a game
+      console.log("This socket comes from a GAME!!!");
+      
+      game.addTransport(socket);
       
     });
     
