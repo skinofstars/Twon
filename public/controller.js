@@ -121,12 +121,6 @@ var controller = function(io){
   
   Game.prototype.restart = function(){
     
-    console.log('game restart')
-    
-    each(this.arenas, function(arena){
-      arena.emit('notice', 'restarting');
-    });
-    
     var playersleft = 0;
     
     each(this.players, function(player){
@@ -138,6 +132,12 @@ var controller = function(io){
     
     if(playersleft < 2)
     {
+      console.log('game restart')
+      
+      each(this.arenas, function(arena){
+        arena.emit('notice', 'restarting');
+      });
+
       g=this;
       setTimeout('g.start()', 1500);
     }
