@@ -151,9 +151,28 @@ var controller = function(io){
           break;
       }
       
-      if(i>3){y += 10;}
+      if(i>3){
+      switch(i % 4)
+      {
+        case 0:
+          player.y += 10;
+          break;
+        case 1:
+          player.y += 10;     
+          break;
+        case 2:
+          player.x += 10;       
+          break;
+        case 3:
+          player.x += 10;       
+          break;
+      }
+        
+
+      }
       
       i++;
+      
       player.arena = startArena;// XXX temporary
       player.emit('removerestart');
     });
