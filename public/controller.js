@@ -45,6 +45,8 @@ var controller = function(io){
     this.players = [];
     this.arenas = [];
     
+    this.transports = [];
+    
     this.start();
     
     // start the game loop
@@ -59,11 +61,44 @@ var controller = function(io){
   Game.prototype.addPlayer = function(player){
     this.players.push(player);
     this.start();
+    this.report();
   };
   Game.prototype.addArena = function(arena){
     this.arenas.push(arena);
     this.start();
+    this.report();
   };
+  
+  //Hack because games get socks added later and multiple transports
+  Game.prototype.addTransport = function(trans){
+    this.transports.push(trans);
+    
+    var game = this;
+    // All ON stuff should be added here, and the context won't be `game`
+    // trans.on('button')…
+    trans.on('restart', function(){
+      game.start();
+    })
+    
+    this.report();
+  };
+  
+  Game.prototype.emit = function(){
+    var _this = this;
+    var args = arguments;
+    for(var t in this.transports){
+      var trans = this.transports[t];
+            console.log(t,this.transports)
+      trans.emit.apply(trans,args);
+    }
+  };
+  
+  // report the current game state 
+  Game.prototype.report = function(){
+    this.emit('update:player_count',this.players.length);
+    this.emit('update:arena_count',this.arenas.length);
+  }
+  
   
   /* start the game, position the players, etc */
   Game.prototype.start = function(){
@@ -143,6 +178,10 @@ var controller = function(io){
     }
     
   }
+  
+  
+  
+  
   
   // When a link between arenas is requested - we set this variable
   var linkArena;
@@ -379,17 +418,37 @@ var controller = function(io){
     
     console.log("New Socket connection to server!");
     
-    socket.on('arena', function(width,height){
+    socket.on('arena', function(width,height,oldid){
       if (identifed) {return} identifed = true;
       
       // this socket comes from an arena
       console.log("This socket comes from AN ARENA!!!");
-      
-      var arena = new Arena(socket,width,height);
+      var arena;
+      if(oldid){
+        each(game.arenas, function(a){
+          if(a.id == oldid){
+            arena = a;
+          }
+        })
+      }
+      arena = arena || new Arena(socket,width,height);
       
       socket.emit('hello', "Hi there Arena " + arena.id);
       
+      socket.emit('id', arena.id);
+      
       game.addArena(arena);
+      
+      
+      socket.on('disconnect', function () {
+        console.log("Disconnected arena");
+        for (var i = game.arenas.length - 1; i >= 0; i--){
+          if(game.arenas[i] == arena){
+            console.log("found arena to remove", i)
+            game.arenas.splice(i,1); 
+          }
+        };
+      });
       
     });
     
@@ -411,6 +470,20 @@ var controller = function(io){
       game.start();
       
     });
+    
+    
+    
+    socket.on('game', function(){
+      if (identifed) {return} identifed = true;
+      
+      // this socket comes from a game
+      console.log("This socket comes from a GAME!!!");
+      
+      game.addTransport(socket);
+      
+    });
+    
+    
     
   });
   
