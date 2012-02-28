@@ -27,7 +27,13 @@
   var ArenaView = function(elements){
     this.els = elements;
     this.transport = getSocket();
-    this.emit('arena', this.els.canvas.width, this.els.canvas.height);
+    
+    this.on('id', function(id){
+      window.location.hash = id;
+    })
+    
+    var currentId = window.location.hash.replace('#','');
+    this.emit('arena', this.els.canvas.width, this.els.canvas.height, currentId);
     
     this.on('backgroundtop', function(color){
       elements.top.style.backgroundColor = color
@@ -118,6 +124,26 @@
   
   
   
+  var GameView = function(elements){
+    this.els = elements;
+    
+    this.transport = getSocket();
+    
+    this.on('update:player_count',function(count){
+      this.els.players.innerHTML = count + " players";
+    });
+    this.on('update:arena_count',function(count){
+      this.els.arenas.innerHTML = count + " arenas";
+    });
+    
+    var game = this;
+    this.els.restart.addEventListener('click', function(){
+      game.emit('restart');
+    })
+    
+    this.emit('game');
+  };
+  
   /* 
    Link up the models to the transport
 
@@ -140,10 +166,12 @@
   }
   transportPrototypes.call(PlayerView);
   transportPrototypes.call(ArenaView);
+  transportPrototypes.call(GameView);
   
   
   window.ArenaView = ArenaView;
   window.PlayerView = PlayerView;
+  window.GameView = GameView;
   
   window.el = function(id){
     return document.getElementById(id);
