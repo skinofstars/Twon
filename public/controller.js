@@ -125,10 +125,22 @@ var controller = function(io){
     
     each(this.arenas, function(arena){
       arena.emit('notice', 'restarting');
-    })
+    });
     
-    g=this;
-    setTimeout('g.start()', 1500);
+    var playersleft = 0;
+    
+    each(this.players, function(player){
+      if(player.dead === false)
+      {
+        playersleft++;
+      }
+    });
+    
+    if(playersleft < 2)
+    {
+      g=this;
+      setTimeout('g.start()', 1500);
+    }
     
   }
   
