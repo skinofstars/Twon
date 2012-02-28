@@ -97,7 +97,7 @@ var controller = function(io){
     var arenas = this.arenas;
     
     each(this.players, function(player){
-      if(this.dead != true)
+      if(player.dead != true)
       {
         player.advance();
         //update the arena with the new player position
