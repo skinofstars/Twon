@@ -334,7 +334,7 @@ var controller = function(io){
     // console.log('head:' + head)
     // console.log('used: '+ this.usedpoints);
     // [[x,y,playerid],[x,y,playerid]]
-    playerCollision = checkCoordinateInArray(head, this.usedpoints);
+    var playerCollision = checkCoordinateInArray(head, this.usedpoints);
     if(playerCollision){
       return true;
     }
