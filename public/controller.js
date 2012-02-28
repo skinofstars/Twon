@@ -80,6 +80,7 @@ var controller = function(io){
     var startArena = this.arenas[0];
     var y = 0;
     each(this.players, function(player){
+      player.dead = false;
       y += 10;
       player.x = 0;
       player.y = y;
