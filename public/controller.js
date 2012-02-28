@@ -97,21 +97,24 @@ var controller = function(io){
     var arenas = this.arenas;
     
     each(this.players, function(player){
-      player.advance();
-      //update the arena with the new player position
-      if(player.arena){
-        player.arena.draw(player);
+      if(this.dead != true)
+      {
+        player.advance();
+        //update the arena with the new player position
+        if(player.arena){
+          player.arena.draw(player);
+        }
       }
     });
     
     // XXX err, are we removing players? this may be duff
-    if(this.players.length==0)
-    {
-      // needs to restart
-      each(this.players, function(player){
-        player.restart();
-      });
-    }
+    //if(this.players.length==0)
+    //{
+      //// needs to restart
+      //each(this.players, function(player){
+        //player.restart();
+      //});
+    //}
   };
   
   
@@ -235,6 +238,9 @@ var controller = function(io){
   // the controller representation of a player
   var Player = function(transport){
     var id = this.id = PlayerCounter++;
+    
+    var dead = this.dead = false;
+    
     this.transport = transport;
     
     this.on('left', function(){
@@ -280,6 +286,7 @@ var controller = function(io){
       if(!this.arena){
         // we arent on an arena anymore
         console.log("KABOOM player "+this.id);
+        this.dead = true;
         this.restart();
       } else {
         this.checkCollision();
@@ -291,7 +298,7 @@ var controller = function(io){
     }
     
   }
-  
+
   Player.prototype.restart = function(){
     //console.log("KABOOM");
     this.emit('gameover', true);
@@ -303,6 +310,7 @@ var controller = function(io){
     if(this.arena.checkCollision([this.x,this.y,this.id]) === true)
     {
       console.log('BOOM!');
+      this.dead = true;
       this.restart();
     }
   }
