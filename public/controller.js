@@ -78,6 +78,7 @@ var controller = function(io){
     })
     
     var startArena = this.arenas[0];
+    
     var y = 0;
     each(this.players, function(player){
       player.dead = false;
@@ -118,6 +119,18 @@ var controller = function(io){
     //}
   };
   
+  Game.prototype.restart = function(){
+    
+    console.log('game restart')
+    
+    each(this.arenas, function(arena){
+      arena.emit('notice', 'restarting');
+    })
+    
+    g=this;
+    setTimeout('g.start()', 1500);
+    
+  }
   
   // When a link between arenas is requested - we set this variable
   var linkArena;
@@ -269,7 +282,7 @@ var controller = function(io){
     this.on('restart', function(){
       console.log('>.< Player '+this.id+' says RESTART!!');
       
-      game.start(); // best way?
+      game.restart(); // best way?
     });
     
   };

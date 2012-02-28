@@ -43,7 +43,17 @@
     this.on('clear', function(id,x,y){
       ctx.clearRect(0,0,this.els.canvas.width, this.els.canvas.height);
     });
+    this.on('notice', function(notice){
+      console.log(notice)
+
+      var x = 10;
+      var y = 10;
+ 
+      ctx.font = "10px Courier";
+      ctx.fillStyle = "#333";
+      ctx.fillText(notice, x, y);
     
+    });
     
     // set up the click handlers for the elements
     var arenaView = this;
