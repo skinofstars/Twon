@@ -33,6 +33,9 @@ var controller = function(io){
   var arenas = [];
   var players = [];
   
+  var gameover = function(){
+    
+  }
   
   /* 
     Arena & Controller logic
@@ -83,6 +86,7 @@ var controller = function(io){
       player.posArray = [0,y];
       player.nextDirection = 'right';
       player.arena = startArena;// XXX temporary
+      player.emit('removerestart');
     });
   }
   
@@ -100,7 +104,16 @@ var controller = function(io){
       }
     });
     
+    // XXX err, are we removing players? this may be duff
+    if(this.players.length==0)
+    {
+      // needs to restart
+      each(this.players, function(player){
+        player.restart();
+      });
+    }
   };
+  
   
   // When a link between arenas is requested - we set this variable
   var linkArena;
@@ -214,7 +227,7 @@ var controller = function(io){
     // [[x,y,playerid],[x,y,playerid]]
     playerCollision = checkCoordinateInArray(head, this.usedpoints);
     if(playerCollision){
-      console.log('BOOM!');
+      return true;
     }
   }
   
@@ -246,6 +259,12 @@ var controller = function(io){
       }[this.nextDirection];
     });
     
+    this.on('restart', function(){
+      console.log('>.< Player '+this.id+' says RESTART!!');
+      
+      game.start(); // best way?
+    });
+    
   };
 
   Player.prototype.advance = function(){
@@ -260,8 +279,8 @@ var controller = function(io){
       
       if(!this.arena){
         // we arent on an arena anymore
-        console.log("KABOOM");
-        
+        console.log("KABOOM player "+this.id);
+        this.restart();
       } else {
         this.checkCollision();
         // store the point for collisions
@@ -271,15 +290,21 @@ var controller = function(io){
       
     }
     
-    
-    
+  }
+  
+  Player.prototype.restart = function(){
+    //console.log("KABOOM");
+    this.emit('gameover', true);
   }
   
   Player.prototype.checkCollision = function(){
     
     // actually, we just ask the arena for now
-    this.arena.checkCollision([this.x,this.y,this.id]);
-    
+    if(this.arena.checkCollision([this.x,this.y,this.id]) === true)
+    {
+      console.log('BOOM!');
+      this.restart();
+    }
   }
   
   

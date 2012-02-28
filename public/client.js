@@ -78,6 +78,10 @@
     this.els.right.addEventListener('click', function(){
       player.emit('right');
     })
+
+    this.els.restart.addEventListener('click', function(){
+      player.emit('restart');
+    })
     
     // player is assigned an id
     this.on('id', function(id){
@@ -85,8 +89,18 @@
       // console.log('-----')
       this.els.left.style.color = fills[id%fills.length]
       this.els.right.style.color = fills[id%fills.length]
+      
     });
     
+    this.on('gameover', function(){
+      // show restart button
+      this.els.restart.style.display = 'block';
+    });
+    
+    this.on('removerestart', function(){
+      // restart pressed, remove button
+      this.els.restart.style.display = 'none';
+    });    
     
     this.emit('player');
     
