@@ -27,7 +27,13 @@
   var ArenaView = function(elements){
     this.els = elements;
     this.transport = getSocket();
-    this.emit('arena', this.els.canvas.width, this.els.canvas.height);
+    
+    this.on('id', function(id){
+      window.location.hash = id;
+    })
+    
+    var currentId = window.location.hash.replace('#','');
+    this.emit('arena', this.els.canvas.width, this.els.canvas.height, currentId);
     
     this.on('backgroundtop', function(color){
       elements.top.style.backgroundColor = color

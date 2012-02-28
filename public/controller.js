@@ -384,17 +384,37 @@ var controller = function(io){
     
     console.log("New Socket connection to server!");
     
-    socket.on('arena', function(width,height){
+    socket.on('arena', function(width,height,oldid){
       if (identifed) {return} identifed = true;
       
       // this socket comes from an arena
       console.log("This socket comes from AN ARENA!!!");
-      
-      var arena = new Arena(socket,width,height);
+      var arena;
+      if(oldid){
+        each(game.arenas, function(a){
+          if(a.id == oldid){
+            arena = a;
+          }
+        })
+      }
+      arena = arena || new Arena(socket,width,height);
       
       socket.emit('hello', "Hi there Arena " + arena.id);
       
+      socket.emit('id', arena.id);
+      
       game.addArena(arena);
+      
+      
+      socket.on('disconnect', function () {
+        console.log("Disconnected arena");
+        for (var i = game.arenas.length - 1; i >= 0; i--){
+          if(game.arenas[i] == arena){
+            console.log("found arena to remove", i)
+            game.arenas.splice(i,1); 
+          }
+        };
+      });
       
     });
     
@@ -428,6 +448,8 @@ var controller = function(io){
       game.addTransport(socket);
       
     });
+    
+    
     
   });
   
