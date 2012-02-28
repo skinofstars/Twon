@@ -18,18 +18,29 @@
       float:left;
       font-size:4em;
     }
+    button#restart{
+      width:100%;
+      position:absolute;
+      top:0;
+      left:0;
+      font-size:4em;
+      display:none;
+      xz-index: -1;
+    }
   </style>
 </head>
 <body>
   <button id="left">&larr;</button>
   <button id="right">&rarr;</button>
+  <button id="restart">RESTART!!</button>
   
   <script src="/socket.io/socket.io.js"></script>
   <script src="client.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
     new PlayerView({
       left:el('left'),
-      right:el('right')
+      right:el('right'),
+      restart:el('restart')
     })
   </script>
 </body>
