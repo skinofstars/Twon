@@ -114,14 +114,46 @@ var controller = function(io){
     
     var startArena = this.arenas[0];
     
+    //(player.id % 4) == 0;//0,height/2     d:right
+    //(player.id % 4) == 1;//width,height/2 d:left
+    //(player.id % 4) == 2;//width/2,0      d:down
+    //(player.id % 4) == 3;//width/2,height d:up
+    
     var y = 0;
+    var i = 0;
+    
+    var firstarena = this.arenas[0];
+    
     each(this.players, function(player){
       player.dead = false;
-      y += 10;
-      player.x = 0;
-      player.y = y;
-      player.posArray = [0,y];
-      player.nextDirection = 'right';
+      
+      switch(i % 4)
+      {
+        case 0:
+          player.x = 0;
+          player.y = firstarena.height/2;
+          player.nextDirection = 'right';
+          break;
+        case 1:
+          player.x = firstarena.width;
+          player.y = firstarena.height/2;
+          player.nextDirection = 'left';        
+          break;
+        case 2:
+          player.x = firstarena.width/2;
+          player.y = 0;
+          player.nextDirection = 'down';         
+          break;
+        case 3:
+          player.x = firstarena.width/2;
+          player.y = firstarena.height;
+          player.nextDirection = 'up';         
+          break;
+      }
+      
+      if(i>3){y += 10;}
+      
+      i++;
       player.arena = startArena;// XXX temporary
       player.emit('removerestart');
     });
@@ -144,14 +176,6 @@ var controller = function(io){
       }
     });
     
-    // XXX err, are we removing players? this may be duff
-    //if(this.players.length==0)
-    //{
-      //// needs to restart
-      //each(this.players, function(player){
-        //player.restart();
-      //});
-    //}
   };
   
   Game.prototype.restart = function(){
@@ -173,8 +197,10 @@ var controller = function(io){
         arena.emit('notice', 'restarting');
       });
 
-      g=this;
-      setTimeout('g.start()', 1500);
+      var g=this;
+      setTimeout(function(){
+        g.start()
+      }, 1500);
     }
     
   }
