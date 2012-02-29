@@ -88,16 +88,38 @@
     
     var player = this;
     // link up the ui
-    this.els.left.addEventListener('click', function(){
+    
+    var ignoreClicks = false;
+    
+    this.els.left.addEventListener('touchstart', function(){
+      ignoreClicks = true;
       player.emit('left');
     })
-    this.els.right.addEventListener('click', function(){
+    this.els.right.addEventListener('touchstart', function(){
+      ignoreClicks = true;
       player.emit('right');
     })
 
-    this.els.restart.addEventListener('click', function(){
+    this.els.restart.addEventListener('touchstart', function(){
+      ignoreClicks = true;
       player.emit('restart');
     })
+    
+    
+    this.els.left.addEventListener('click', function(){
+      if(!ignoreClicks)
+        player.emit('left');
+    })
+    this.els.right.addEventListener('click', function(){
+      if(!ignoreClicks)
+        player.emit('right');
+    })
+
+    this.els.restart.addEventListener('click', function(){
+      if(!ignoreClicks)
+        player.emit('restart');
+    })
+    
     
     // player is assigned an id
     this.on('id', function(id){
