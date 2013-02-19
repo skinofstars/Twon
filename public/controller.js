@@ -51,10 +51,26 @@ var controller = function(io){
     
     // start the game loop
     var g = this;
+
+    // FPS
+    // 50 = 20FPS - acceptable
+    // 30 = 30FPS - good
+    // 20 = 50FPS - smooth
+    var FPS = 30;
+
     (function l(){
+
+      // A setTimeout period doesn't take in to account execution time
+      // We need to know execution time too
+      var tLoopExecStart = new Date().getTime();
       g.loop();
-      setTimeout(l,50);
-    })()
+      var tLoopExec = new Date().getTime() - tLoopExecStart;
+
+      // loop the time diff from target FPS to game execution time
+      var loopOffset = FPS - tLoopExec;
+
+      setTimeout(l,loopOffset);
+    })();
   };
   
   // Add entities to the game
@@ -193,12 +209,13 @@ var controller = function(io){
     });
   }
   
-  /* The actual game loop*/
+  /* The game loop base acions */
   Game.prototype.loop = function(){
     // console.log("game loop")
     
     var arenas = this.arenas;
     
+    // iterate players 
     each(this.players, function(player){
       if(player.dead != true)
       {
