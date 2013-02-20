@@ -157,6 +157,7 @@ var controller = function(io){
     
     var firstarena = this.arenas[0];
     
+    // position players
     each(this.players, function(player){
       player.dead = false;
       
@@ -184,24 +185,23 @@ var controller = function(io){
           break;
       }
       
+      // this is to put a bit of space when starting with more than 4 players 
       if(i>3){
-      switch(i % 4)
-      {
-        case 0:
-          player.y += 10;
-          break;
-        case 1:
-          player.y += 10;     
-          break;
-        case 2:
-          player.x += 10;       
-          break;
-        case 3:
-          player.x += 10;       
-          break;
-      }
-        
-
+        switch(i % 4)
+        {
+          case 0:
+            player.y += 10;
+            break;
+          case 1:
+            player.y += 10;     
+            break;
+          case 2:
+            player.x += 10;       
+            break;
+          case 3:
+            player.x += 10;       
+            break;
+        }
       }
       
       i++;
