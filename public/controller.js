@@ -69,6 +69,8 @@ var controller = function(io){
       // loop the time diff from target FPS to game execution time
       var loopOffset = FPS - tLoopExec;
 
+      if (loopOffset < 0) loopOffset = 1;
+
       setTimeout(l,loopOffset);
     })();
   };
