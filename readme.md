@@ -18,7 +18,6 @@ Err, you've seen Tron right? The game is simple and here it's still in developme
 
 ### TODO
 
-* Consistent game loop
 * Title screen
 * Scoring
 * Vector based drawing
